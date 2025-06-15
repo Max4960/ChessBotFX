@@ -32,17 +32,18 @@ public class Board {
     private boolean isValidPieceMove(Piece piece, int startRow, int startCol, int endRow, int endCol) {
         int deltaRow = endRow - startRow;
         int deltaCol = endCol - startCol;
-        boolean diagonal = Math.abs(startRow - endRow) == Math.abs(startCol - endCol);
+        boolean isStraight = startRow == endRow || startCol == endCol;
+        boolean isDiagonal = Math.abs(startRow - endRow) == Math.abs(startCol - endCol);
         switch (piece.getType()) {
             case PAWN:
                 //TODO:
                 return true;
             case ROOK:
-                return startRow == endRow || startCol == endCol;
+                return isStraight && isClearPath(startRow, startCol, endRow, endCol);
             case BISHOP:
-                return diagonal;
+                return isDiagonal && isClearPath(startRow, startCol, endRow, endCol);
             case QUEEN:
-                return startRow == endRow || startCol == endCol || diagonal;
+                return (isStraight || isDiagonal) && isClearPath(startRow, startCol, endRow, endCol);
             case KNIGHT:
                 return Math.abs(deltaRow) == 2 && Math.abs(deltaCol) == 1 ||  Math.abs(deltaRow) == 1 && Math.abs(deltaCol) == 2;
             case KING:
@@ -50,6 +51,24 @@ public class Board {
             default:
                 return false;
         }
+    }
+
+    private boolean isClearPath(int startRow, int startCol, int endRow, int endCol) {
+        int rowDir = Integer.signum(endRow - startRow);
+        int colDir = Integer.signum(endCol - startCol);
+
+        int curRow = startRow + rowDir;
+        int curCol = startCol + colDir;
+
+        while (curRow != endRow || curCol != endCol) {
+            if (getPiece(curRow, curCol) != null) {
+                return false;
+            }
+
+            curRow += rowDir;
+            curCol += colDir;
+        }
+        return true;
     }
 
     public void movePiece(int startRow, int startCol, int endRow, int endCol) {
