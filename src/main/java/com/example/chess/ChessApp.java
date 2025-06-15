@@ -66,7 +66,7 @@ public class ChessApp extends Application {
 
         switch (type) {
             case PAWN: piece = 'p'; break;
-            case KNIGHT: piece = 'k'; break;
+            case KNIGHT: piece = 'n'; break;
             case ROOK: piece = 'r'; break;
             case BISHOP: piece = 'b'; break;
             case QUEEN: piece = 'q'; break;

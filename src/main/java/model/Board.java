@@ -17,8 +17,39 @@ public class Board {
         if (board[startRow][startCol] == null) {
             return false;
         }
+        if (startRow == endRow && startCol == endCol) {
+            return false;
+        }
+        Piece piece = getPiece(startRow, startCol);
+        Piece destinationPiece = getPiece(endRow, endCol);
+        if (destinationPiece != null && destinationPiece.getColour() == piece.getColour()) {
+            return false;
+        }
 
-        return true;
+        return isValidPieceMove(piece, startRow, startCol, endRow, endCol);
+    }
+
+    private boolean isValidPieceMove(Piece piece, int startRow, int startCol, int endRow, int endCol) {
+        int deltaRow = endRow - startRow;
+        int deltaCol = endCol - startCol;
+        boolean diagonal = Math.abs(startRow - endRow) == Math.abs(startCol - endCol);
+        switch (piece.getType()) {
+            case PAWN:
+                //TODO:
+                return true;
+            case ROOK:
+                return startRow == endRow || startCol == endCol;
+            case BISHOP:
+                return diagonal;
+            case QUEEN:
+                return startRow == endRow || startCol == endCol || diagonal;
+            case KNIGHT:
+                return Math.abs(deltaRow) == 2 && Math.abs(deltaCol) == 1 ||  Math.abs(deltaRow) == 1 && Math.abs(deltaCol) == 2;
+            case KING:
+                return Math.abs(startRow - endRow) <= 1 && Math.abs(startCol - endCol) <= 1;
+            default:
+                return false;
+        }
     }
 
     public void movePiece(int startRow, int startCol, int endRow, int endCol) {
