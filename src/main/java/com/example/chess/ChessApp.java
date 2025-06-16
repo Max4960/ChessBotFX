@@ -1,5 +1,6 @@
 package com.example.chess;
 
+import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -9,10 +10,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import model.Board;
-import model.Colour;
-import model.Piece;
-import model.PieceType;
+import javafx.util.Duration;
+import model.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +27,9 @@ public class ChessApp extends Application {
     private static final int TILE_SIZE = 75;
 
     private Map<Character, Image> pieceImages = new HashMap<>();
+
+    private Bot bot = new Bot();
+    private boolean botsTurn = false;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -136,10 +138,9 @@ public class ChessApp extends Application {
                     selectedTile.setStyle(selectedTile.getStyle() + "-fx-border-color: red; -fx-border-width: 2;");
                 }
             }
-        } else { // 2. Second click: Attempt to move
+        } else {
             Piece destinationPiece = board.getPiece(row, col);
 
-            // Case A: Clicking another of your own pieces -> switch selection
             if (destinationPiece != null && destinationPiece.getColour() == currentPlayer) {
                 // Deselect old tile
                 String originalStyle = selectedTile.getStyle().replaceAll("-fx-border-color: red; -fx-border-width: 2;", "");
@@ -150,10 +151,9 @@ public class ChessApp extends Application {
                 startCol = col;
                 selectedTile = (StackPane) getNode(row, col, grid);
                 selectedTile.setStyle(selectedTile.getStyle() + "-fx-border-color: red; -fx-border-width: 2;");
-                return; // Wait for the next click
+                return;
             }
 
-            // Case B: Making a move
             if (board.isvalidMove(startRow, startCol, row, col)) {
                 board.movePiece(startRow, startCol, row, col);
                 switchPlayer();
@@ -167,6 +167,32 @@ public class ChessApp extends Application {
 
     private void switchPlayer() {
         currentPlayer = (currentPlayer == Colour.WHITE) ? Colour.BLACK : Colour.WHITE;
+        board.switchCurrentPlayer();
+
+        if (currentPlayer == Colour.BLACK) {
+            makeBotMove();
+        }
+
+    }
+
+    private void makeBotMove() {
+        botsTurn = true;
+        grid.setDisable(true);
+
+        PauseTransition pause = new PauseTransition(Duration.millis(500));
+        pause.setOnFinished(event -> {
+            Move botMove = bot.findBestMove(board);
+            if (botMove != null) {
+                board.movePiece(botMove.startRow, botMove.startCol, botMove.endRow, botMove.endCol);
+                refresh();
+                switchPlayer();
+            } else {
+                System.out.println("Checkmate or Stalemate");
+            }
+            botsTurn = false;
+            grid.setDisable(false);
+        });
+        pause.play();
     }
 
     private Node getNode(int row, int col, GridPane gridPane) {

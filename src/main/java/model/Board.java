@@ -1,11 +1,96 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Board {
     private final Piece[][] board;
+    private Colour currentPlayer;
 
     public Board() {
         this.board = new Piece[8][8];
+        currentPlayer = Colour.WHITE;
         setupBoard();
+    }
+
+    public Board(Board original) {
+        this.board = new Piece[8][8];
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                Piece originalPiece = original.board[r][c];
+                if (originalPiece != null) {
+                    this.board[r][c] = new Piece(originalPiece.getType(), originalPiece.getColour());
+                }
+            }
+        }
+        this.currentPlayer = original.currentPlayer;
+    }
+
+    public Colour getCurrentPlayer() {
+        return currentPlayer;
+    }
+
+    public void switchCurrentPlayer() {
+        if (currentPlayer == Colour.WHITE) {
+            currentPlayer = Colour.BLACK;
+        } else {
+            currentPlayer = Colour.WHITE;
+        }
+    }
+
+    public List<Move> getLegalMoves(Colour playerColour) {
+        List<Move> legalMoves = new ArrayList<>();
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                if (getPiece(r, c) != null) {
+                    if (getPiece(r, c).getColour() == playerColour) {
+                        for (int fr = 0; fr < 8; fr++) {
+                            for (int cr = 0; cr < 8; cr++) {
+                                if (isvalidMove(r, c, fr, cr)) {
+                                    legalMoves.add(new Move(r, c, fr, cr));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return legalMoves;
+    }
+
+    public Board copy() {
+        return new Board(this);
+    }
+
+    // + good for white, - good for black
+    public int evaluateBoard() {
+        int total = 0;
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                if (getPiece(r, c) != null) {
+                    Piece currentPiece = getPiece(r,c);
+                    int value = getPieceValue(currentPiece);
+                    if (currentPiece.getColour() == Colour.WHITE) {
+                        total += value;
+                    } else {
+                        total -= value;
+                    }
+                }
+            }
+        }
+        return total;
+    }
+
+    private int getPieceValue(Piece piece) {
+        switch (piece.getType()) {
+            case PAWN: return 10;
+            case KNIGHT: return 30;
+            case BISHOP: return 30;
+            case ROOK: return 50;
+            case QUEEN: return 90;
+            case KING: return 1000;
+            default: return 0;
+        }
     }
 
     public Piece getPiece(int row, int col) {
@@ -37,7 +122,22 @@ public class Board {
         switch (piece.getType()) {
             case PAWN:
                 //TODO:
-                return true;
+                int forward = (piece.getColour() == Colour.WHITE) ? -1 : 1;
+                Piece destinationPiece = getPiece(endRow, endCol);
+
+                if (deltaCol == 0 && deltaRow == forward && destinationPiece == null) {
+                    return true;
+                }
+
+                int startingRank = (piece.getColour() == Colour.WHITE) ? 6 : 1;
+                if (startRow == startingRank && deltaCol == 0 && deltaRow == 2 * forward && destinationPiece == null) {
+                    return true;
+                }
+
+                if (Math.abs(deltaCol) == 1 && deltaRow == forward && destinationPiece != null) {
+                    return true;
+                }
+                return false;
             case ROOK:
                 return isStraight && isClearPath(startRow, startCol, endRow, endCol);
             case BISHOP:
