@@ -5,36 +5,79 @@ import java.util.Random;
 
 public class Bot {
     public Move findBestMove(Board board) {
-        Move bestMove = null;
-        int bestScore = (board.getCurrentPlayer() == Colour.WHITE) ? Integer.MIN_VALUE : Integer.MAX_VALUE;
-
         List<Move> legalMoves = board.getLegalMoves(board.getCurrentPlayer());
+        if (legalMoves.isEmpty()) {
+            return null;
+        }
+        Move bestMove = null;
+        int bestScore;
+        boolean maximising = board.getCurrentPlayer() == Colour.WHITE;
 
+        if (maximising) {
+            bestScore = Integer.MIN_VALUE;
+        } else {
+            bestScore = Integer.MAX_VALUE;
+        }
+
+        int totalMoves = legalMoves.size();
+        int currentMoves = 0;
 
         for (Move move : legalMoves) {
-            Board temp = board.copy();
-            temp.movePiece(move.startRow, move.startCol, move.endRow, move.endCol);
+            currentMoves++;
+            ProgressBar.print(currentMoves, totalMoves);
 
-            int score = temp.evaluateBoard();
+            Board tempBoard = board.copy();
+            tempBoard.movePiece(move.startRow, move.startCol, move.endRow, move.endCol);
+            tempBoard.switchCurrentPlayer();
 
-            if (board.getCurrentPlayer() == Colour.WHITE) {
+            int score = minimax(tempBoard, 4, !maximising);
+            if (maximising) {
                 if (score > bestScore) {
-                    bestScore = score;
                     bestMove = move;
+                    bestScore = score;
                 }
             } else {
                 if (score < bestScore) {
-                    bestScore = score;
                     bestMove = move;
+                    bestScore = score;
                 }
             }
         }
 
         if (bestMove == null && !legalMoves.isEmpty()) {
-            System.out.println("No best move found");
-            Random rand = new Random();
-            return legalMoves.get(rand.nextInt(legalMoves.size()));
+            return legalMoves.get(new Random().nextInt(legalMoves.size()));
         }
+
         return bestMove;
+    }
+
+    private int minimax(Board board, int depth, boolean maximising) {
+        if (depth == 0) {
+            return board.evaluateBoard();
+        }
+
+        List<Move> moves = board.getLegalMoves(board.getCurrentPlayer());
+
+        if (maximising) {
+            int maxScore =  Integer.MIN_VALUE;
+            for (Move move : moves) {
+                Board temp = board.copy();
+                temp.movePiece(move.startRow, move.startCol, move.endRow, move.endCol);
+                temp.switchCurrentPlayer();
+                int eval = minimax(temp, depth - 1, false);
+                maxScore = Math.max(eval, maxScore);
+            }
+            return maxScore;
+        } else {
+            int minScore = Integer.MAX_VALUE;
+            for (Move move : moves) {
+                Board temp = board.copy();
+                temp.movePiece(move.startRow, move.startCol, move.endRow, move.endCol);
+                temp.switchCurrentPlayer();
+                int eval = minimax(temp, depth - 1, true);
+                minScore = Math.min(eval, minScore);
+            }
+            return minScore;
+        }
     }
 }
