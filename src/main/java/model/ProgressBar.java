@@ -9,6 +9,7 @@ public class ProgressBar {
             return;
         }
 
+        long percentage = (c*100)/t;
         long progress = (c*width)/t;
 
         StringBuilder sb = new StringBuilder();
@@ -21,7 +22,7 @@ public class ProgressBar {
                 sb.append(' ');
             }
         }
-        sb.append(']');
+        sb.append("] " +  percentage + "%");
         System.out.print(sb.toString());
         if (c == t) {
             System.out.println();

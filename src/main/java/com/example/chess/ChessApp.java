@@ -125,7 +125,7 @@ public class ChessApp extends Application {
     }
 
     private void handleTileClick(int row, int col) {
-        System.out.println("Clicked tile: " + row + ", " + col);
+        //System.out.println("Clicked tile: " + row + ", " + col);
 
         if (startRow == -1 || startCol == -1) {
             Piece clickedPiece = board.getPiece(row, col);

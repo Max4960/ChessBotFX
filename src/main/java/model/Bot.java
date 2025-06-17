@@ -4,6 +4,13 @@ import java.util.List;
 import java.util.Random;
 
 public class Bot {
+
+    private final Evaluator evaluator;
+
+    public Bot() {
+        this.evaluator = new Evaluator();
+    }
+
     public Move findBestMove(Board board) {
         List<Move> legalMoves = board.getLegalMoves(board.getCurrentPlayer());
         if (legalMoves.isEmpty()) {
@@ -30,7 +37,7 @@ public class Bot {
             tempBoard.movePiece(move.startRow, move.startCol, move.endRow, move.endCol);
             tempBoard.switchCurrentPlayer();
 
-            int score = minimax(tempBoard, 4, !maximising);
+            int score = minimax(tempBoard, 3, !maximising);
             if (maximising) {
                 if (score > bestScore) {
                     bestMove = move;
@@ -53,7 +60,7 @@ public class Bot {
 
     private int minimax(Board board, int depth, boolean maximising) {
         if (depth == 0) {
-            return board.evaluateBoard();
+            return this.evaluator.evaluate(board);
         }
 
         List<Move> moves = board.getLegalMoves(board.getCurrentPlayer());

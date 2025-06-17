@@ -62,36 +62,8 @@ public class Board {
         return new Board(this);
     }
 
-    // + good for white, - good for black
-    public int evaluateBoard() {
-        int total = 0;
-        for (int r = 0; r < 8; r++) {
-            for (int c = 0; c < 8; c++) {
-                if (getPiece(r, c) != null) {
-                    Piece currentPiece = getPiece(r,c);
-                    int value = getPieceValue(currentPiece);
-                    if (currentPiece.getColour() == Colour.WHITE) {
-                        total += value;
-                    } else {
-                        total -= value;
-                    }
-                }
-            }
-        }
-        return total;
-    }
 
-    private int getPieceValue(Piece piece) {
-        switch (piece.getType()) {
-            case PAWN: return 10;
-            case KNIGHT: return 30;
-            case BISHOP: return 30;
-            case ROOK: return 50;
-            case QUEEN: return 90;
-            case KING: return 1000;
-            default: return 0;
-        }
-    }
+
 
     public Piece getPiece(int row, int col) {
         return board[row][col];
