@@ -15,6 +15,7 @@ import model.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class ChessApp extends Application {
     private Board board = new Board();
@@ -26,7 +27,7 @@ public class ChessApp extends Application {
 
     private static final int TILE_SIZE = 75;
 
-    private Map<Character, Image> pieceImages = new HashMap<>();
+    private Map<String, Image> pieceImages = new HashMap<>();
 
     private Bot bot = new Bot();
     private boolean botsTurn = false;
@@ -45,18 +46,22 @@ public class ChessApp extends Application {
         PieceType[] types = PieceType.values();
         for (Colour colour : Colour.values()) {
             for (PieceType type : types) {
-                char pieceName = getCharPiece(type, colour);
+                char pieceChar = getCharPiece(type, colour);
+                if (pieceChar == '?') continue; // Use continue, not return
 
-                if (pieceName == '?') {continue;}
+                String colourString = colour.name().toLowerCase();
+                String typeString = Character.toString(Character.toLowerCase(pieceChar));
+                String key = colourString + typeString; // e.g., "whitep", "blackp"
 
-                String filename = pieceName + ".png";
+                String filename = key + ".png";
                 String path = "/images/" + filename;
 
                 try {
-                    Image image =  new Image(getClass().getResourceAsStream(path));
-                    pieceImages.put(pieceName, image);
+                    // Use getResourceAsStream to load from resources
+                    Image image = new Image(Objects.requireNonNull(getClass().getResourceAsStream(path)));
+                    pieceImages.put(key, image);
                 } catch (Exception e) {
-                    System.err.println("Error loading image " + path);
+                    System.err.println("Could not load image: " + path);
                     e.printStackTrace();
                 }
             }
@@ -89,6 +94,7 @@ public class ChessApp extends Application {
         grid.getChildren().clear();
         for (int r = 0; r < 8; r++) {
             for (int c = 0; c < 8; c++) {
+
                 StackPane tile = new StackPane();
                 tile.setPrefSize(TILE_SIZE, TILE_SIZE);
 
@@ -97,13 +103,15 @@ public class ChessApp extends Application {
 
                 Piece piece = board.getPiece(r, c);
                 if (piece != null) {
-                    Character key = getCharPiece(piece.getType(), piece.getColour());
+                    String colourKey = piece.getColour().name().toLowerCase();
+                    char typeChar = Character.toLowerCase(getCharPiece(piece.getType(), piece.getColour()));
+                    String key = colourKey + typeChar; // e.g., "whitep"
                     Image image = pieceImages.get(key);
 
                     if (image != null) {
                         ImageView imageView = new ImageView(image);
-                        imageView.setFitWidth(TILE_SIZE*0.85);
-                        imageView.setFitHeight(TILE_SIZE*0.85);
+                        imageView.setFitWidth(TILE_SIZE * 0.85);
+                        imageView.setFitHeight(TILE_SIZE * 0.85);
                         imageView.setPreserveRatio(true);
                         tile.getChildren().add(imageView);
                     } else {
@@ -112,7 +120,6 @@ public class ChessApp extends Application {
                         tile.getChildren().add(pieceLabel);
                     }
                 }
-
                 final int finalRow = r;
                 final int finalCol = c;
                 tile.setOnMouseClicked(event -> {
