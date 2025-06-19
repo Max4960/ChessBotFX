@@ -19,6 +19,8 @@ public class Bot {
         Move bestMove = null;
         int bestScore;
         boolean maximising = board.getCurrentPlayer() == Colour.WHITE;
+        int alpha = Integer.MIN_VALUE;
+        int beta = Integer.MAX_VALUE;
 
         if (maximising) {
             bestScore = Integer.MIN_VALUE;
@@ -37,7 +39,7 @@ public class Bot {
             tempBoard.movePiece(move.startRow, move.startCol, move.endRow, move.endCol);
             tempBoard.switchCurrentPlayer();
 
-            int score = minimax(tempBoard, 3, !maximising);
+            int score = minimax(tempBoard, 4, !maximising, alpha, beta);
             if (maximising) {
                 if (score > bestScore) {
                     bestMove = move;
@@ -58,7 +60,7 @@ public class Bot {
         return bestMove;
     }
 
-    private int minimax(Board board, int depth, boolean maximising) {
+    private int minimax(Board board, int depth, boolean maximising, int alpha, int beta) {
         if (depth == 0) {
             return this.evaluator.evaluate(board);
         }
@@ -71,8 +73,12 @@ public class Bot {
                 Board temp = board.copy();
                 temp.movePiece(move.startRow, move.startCol, move.endRow, move.endCol);
                 temp.switchCurrentPlayer();
-                int eval = minimax(temp, depth - 1, false);
+                int eval = minimax(temp, depth - 1, false, alpha, beta);
                 maxScore = Math.max(eval, maxScore);
+                alpha = Math.max(alpha, maxScore);
+                if (beta <= alpha) {
+                    break;
+                }
             }
             return maxScore;
         } else {
@@ -81,8 +87,12 @@ public class Bot {
                 Board temp = board.copy();
                 temp.movePiece(move.startRow, move.startCol, move.endRow, move.endCol);
                 temp.switchCurrentPlayer();
-                int eval = minimax(temp, depth - 1, true);
+                int eval = minimax(temp, depth - 1, true, alpha, beta);
                 minScore = Math.min(eval, minScore);
+                beta = Math.min(beta, minScore);
+                if (beta <= alpha) {
+                    break;
+                }
             }
             return minScore;
         }

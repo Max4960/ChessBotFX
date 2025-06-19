@@ -186,7 +186,7 @@ public class ChessApp extends Application {
         botsTurn = true;
         grid.setDisable(true);
 
-        PauseTransition pause = new PauseTransition(Duration.millis(500));
+        PauseTransition pause = new PauseTransition(Duration.millis(100));
         pause.setOnFinished(event -> {
             Move botMove = bot.findBestMove(board);
             if (botMove != null) {
